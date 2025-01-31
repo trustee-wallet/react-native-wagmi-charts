@@ -10,6 +10,7 @@ import Animated, {
 import flattenChildren from 'react-keyed-flatten-children';
 
 import { LineChartDimensionsContext } from './Chart';
+import { LineChartPathContext } from './LineChartPathContext';
 import { LineChartPath, LineChartPathProps } from './Path';
 import { useLineChart } from './useLineChart';
 
@@ -18,16 +19,11 @@ const BACKGROUND_COMPONENTS = [
   'LineChartHorizontalLine',
   'LineChartGradient',
   'LineChartDot',
+  'LineChartTooltip',
 ];
 const FOREGROUND_COMPONENTS = ['LineChartHighlight', 'LineChartDot'];
 
 const AnimatedSVG = Animated.createAnimatedComponent(Svg);
-
-export const LineChartPathContext = React.createContext({
-  color: '',
-  isInactive: false,
-  isTransitionEnabled: true,
-});
 
 type LineChartPathWrapperProps = {
   animationDuration?: number;
@@ -105,7 +101,19 @@ export function LineChartPathWrapper({
         }
       ),
     };
-  });
+  }, [
+    animateOnMount,
+    animationDuration,
+    animationProps,
+    currentX,
+    hasMountedAnimation,
+    isActive,
+    isMounted,
+    mountAnimationDuration,
+    mountAnimationProps,
+    pathWidth,
+    widthOffset,
+  ]);
 
   const viewSize = React.useMemo(() => ({ width, height }), [width, height]);
 
@@ -144,8 +152,8 @@ export function LineChartPathWrapper({
               width={strokeWidth}
               {...pathProps}
             />
-            {backgroundChildren}
           </Svg>
+          <Svg style={StyleSheet.absoluteFill}>{backgroundChildren}</Svg>
         </View>
       </LineChartPathContext.Provider>
       <LineChartPathContext.Provider
@@ -158,6 +166,12 @@ export function LineChartPathWrapper({
         <View style={StyleSheet.absoluteFill}>
           <AnimatedSVG animatedProps={svgProps} height={height}>
             <LineChartPath color={color} width={strokeWidth} {...pathProps} />
+          </AnimatedSVG>
+          <AnimatedSVG
+            animatedProps={svgProps}
+            height={height}
+            style={StyleSheet.absoluteFill}
+          >
             {foregroundChildren}
           </AnimatedSVG>
         </View>

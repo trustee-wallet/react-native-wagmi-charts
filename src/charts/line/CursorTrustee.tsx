@@ -17,9 +17,9 @@ type LineChartCursorTrusteeProps = Omit<
 > & {
   children?: React.ReactNode;
   color?: string;
+  size?: number;
   horizontalLineColor?: string;
   verticalLineColor?: string;
-  size?: number;
   outerSize?: number;
   crosshairWrapperProps?: Animated.AnimateProps<ViewProps>;
   crosshairProps?: ViewProps;

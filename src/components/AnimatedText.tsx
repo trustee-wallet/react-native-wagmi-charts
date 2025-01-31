@@ -35,7 +35,8 @@ export const AnimatedText = ({ text, style }: AnimatedTextProps) => {
         if (data !== prevData && inputRef.current) {
           inputRef.current.value = data;
         }
-      }
+      },
+      [text]
     );
   }
   const animatedProps = useAnimatedProps(() => {
@@ -52,8 +53,8 @@ export const AnimatedText = ({ text, style }: AnimatedTextProps) => {
       ref={Platform.select({ web: inputRef })}
       value={text.value}
       style={[styles.text, style]}
-      animatedProps={animatedProps}
       placeholder=''
+      animatedProps={animatedProps}
     />
   );
 };

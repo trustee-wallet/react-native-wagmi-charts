@@ -1,4 +1,5 @@
 import * as React from 'react';
+
 import Animated, {
   Easing,
   useAnimatedProps,
@@ -8,10 +9,11 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { Circle, CircleProps } from 'react-native-svg';
-import { getYForX, parse } from 'react-native-redash';
 
 import { LineChartDimensionsContext } from './Chart';
-import { LineChartPathContext } from './ChartPath';
+import { LineChartPathContext } from './LineChartPathContext';
+import { getXPositionForCurve } from './utils/getXPositionForCurve';
+import { getYForX } from 'react-native-redash';
 import { useLineChart } from './useLineChart';
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
@@ -57,10 +59,8 @@ export function LineChartDot({
   size = 4,
   outerSize = size * 4,
 }: LineChartDotProps) {
-  const { data, isActive } = useLineChart();
-  const { path, pathWidth: width } = React.useContext(
-    LineChartDimensionsContext
-  );
+  const { isActive } = useLineChart();
+  const { parsedPath } = React.useContext(LineChartDimensionsContext);
 
   ////////////////////////////////////////////////////////////
 
@@ -72,28 +72,24 @@ export function LineChartDot({
 
   ////////////////////////////////////////////////////////////
 
-  const parsedPath = React.useMemo(() => parse(path), [path]);
+  const x = useDerivedValue(() => {
+    return withTiming(getXPositionForCurve(parsedPath, at));
+  }, [at, parsedPath]);
 
-  ////////////////////////////////////////////////////////////
-
-  const pointWidth = React.useMemo(
-    () => width / (data.length - 1),
-    [data.length, width]
+  const y = useDerivedValue(
+    () => withTiming(getYForX(parsedPath!, x.value) || 0),
+    [parsedPath, x]
   );
 
   ////////////////////////////////////////////////////////////
 
-  const x = useDerivedValue(() => withTiming(pointWidth * at));
-  const y = useDerivedValue(() =>
-    withTiming(getYForX(parsedPath!, x.value) || 0)
+  const animatedDotProps = useAnimatedProps(
+    () => ({
+      cx: x.value,
+      cy: y.value,
+    }),
+    [x, y]
   );
-
-  ////////////////////////////////////////////////////////////
-
-  const animatedDotProps = useAnimatedProps(() => ({
-    cx: x.value,
-    cy: y.value,
-  }));
 
   const animatedOuterDotProps = useAnimatedProps(() => {
     let defaultProps = {
@@ -117,6 +113,7 @@ export function LineChartDot({
     const easing = Easing.out(Easing.sin);
     const animatedOpacity = withRepeat(
       withSequence(
+        withTiming(0),
         withTiming(0.8),
         withTiming(0, {
           duration: pulseDurationMs,
@@ -128,6 +125,7 @@ export function LineChartDot({
     );
     const scale = withRepeat(
       withSequence(
+        withTiming(0),
         withTiming(0),
         withTiming(outerSize, {
           duration: pulseDurationMs,
@@ -150,7 +148,7 @@ export function LineChartDot({
       opacity: animatedOpacity,
       r: scale,
     };
-  }, [outerSize]);
+  }, [hasPulse, isActive, outerSize, pulseBehaviour, pulseDurationMs, x, y]);
 
   ////////////////////////////////////////////////////////////
 

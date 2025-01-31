@@ -1,11 +1,9 @@
 import * as React from 'react';
 import { View, StyleSheet } from 'react-native';
-import { parse } from 'react-native-redash';
 
 import { LineChartDimensionsContext } from '../Chart';
 import { useLineChart } from '../useLineChart';
 
-// @ts-expect-error missing types
 import { canUseDOM } from 'fbjs/lib/ExecutionEnvironment';
 
 let isEnabled = false;
@@ -50,13 +48,8 @@ function isHoverEnabled(): boolean {
 }
 
 export const LineChartHoverTrap = () => {
-  const { width, path } = React.useContext(LineChartDimensionsContext);
+  const { width, parsedPath } = React.useContext(LineChartDimensionsContext);
   const { currentX, currentIndex, isActive, data } = useLineChart();
-
-  const parsedPath = React.useMemo(
-    () => (path ? parse(path) : undefined),
-    [path]
-  );
 
   const onMouseMove = React.useCallback(
     ({ x }: { x: number }) => {
@@ -72,7 +65,7 @@ export const LineChartHoverTrap = () => {
           const minIndex = 0;
           const boundedIndex = Math.max(
             minIndex,
-            Math.round(boundedX / width / (1 / (data.length - 1)))
+            Math.round(boundedX / width / (1 / (data ? data.length - 1 : 1)))
           );
 
           currentIndex.value = boundedIndex;
@@ -82,7 +75,7 @@ export const LineChartHoverTrap = () => {
         currentIndex.value = -1;
       }
     },
-    [currentIndex, currentX, data.length, isActive, parsedPath, width]
+    [currentIndex, currentX, data, isActive, parsedPath, width]
   );
 
   const onMouseLeave = React.useCallback(() => {

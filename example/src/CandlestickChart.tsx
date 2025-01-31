@@ -1,7 +1,9 @@
 import * as React from 'react';
 import { Platform } from 'react-native';
+// @ts-ignore
 import { Box, Button, Flex, Heading, Text, Stack } from 'bumbag-native';
 import { CandlestickChart, TCandle } from 'react-native-wagmi-charts';
+// @ts-ignore
 import * as haptics from 'expo-haptics';
 
 import mockData from './data/candlestick-data.json';

@@ -61,7 +61,7 @@ export function useLineChartData({ id }: { id?: string }) {
 
   validateLineChartId(dataContext, id);
 
-  const data = dataContext[id || DefaultLineChartId];
+  const data = dataContext?.[id || DefaultLineChartId];
 
   return useMemo(() => ({ data }), [data]);
 }

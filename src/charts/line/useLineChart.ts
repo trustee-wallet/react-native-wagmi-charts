@@ -12,10 +12,11 @@ export function useLineChart() {
   });
   const currentY = useCurrentY();
 
-  let tmpContext = { data: [] };
-
+  let tmpContext = { data: [] }
+  // @ts-ignore
   for (const item of dataContext?.data) {
-    tmpContext.data.push({ ...item });
+    // @ts-ignore
+    tmpContext.data.push({ ...item })
   }
 
   return React.useMemo(

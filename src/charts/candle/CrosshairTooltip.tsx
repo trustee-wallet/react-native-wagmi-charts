@@ -1,5 +1,5 @@
 import * as React from 'react';
-import type { StyleProp, TextStyle, ViewProps } from 'react-native';
+import type { LayoutChangeEvent, StyleProp, TextStyle, ViewProps } from 'react-native';
 import { StyleSheet } from 'react-native';
 import Animated, {
   useAnimatedStyle,
@@ -28,6 +28,7 @@ export type CandlestickChartCrosshairTooltipContext = {
 
 export const CandlestickChartCrosshairTooltipContext =
   React.createContext<CandlestickChartCrosshairTooltipContext>({
+    // @ts-ignore
     position: { value: 'left' },
   });
 
@@ -49,7 +50,7 @@ export function CandlestickChartCrosshairTooltip({
   const elementWidth = useSharedValue(0);
 
   const handleLayout = React.useCallback(
-    (event) => {
+    (event: LayoutChangeEvent) => {
       elementHeight.value = event.nativeEvent.layout.height;
       elementWidth.value = event.nativeEvent.layout.width;
     },
@@ -65,24 +66,33 @@ export function CandlestickChartCrosshairTooltip({
     }
 
     return offset;
-  });
+  }, [currentY, elementHeight, height, yGutter]);
 
-  const tooltip = useAnimatedStyle(() => ({
-    backgroundColor: 'white',
-    position: 'absolute',
-    display: 'flex',
-    padding: 4,
-  }));
-  const leftTooltip = useAnimatedStyle(() => ({
-    left: xGutter,
-    top: -(elementHeight.value / 2) - topOffset.value,
-    opacity: position.value === 'left' ? 1 : 0,
-  }));
-  const rightTooltip = useAnimatedStyle(() => ({
-    left: width - elementWidth.value - xGutter,
-    top: -(elementHeight.value / 2) - topOffset.value,
-    opacity: position.value === 'right' ? 1 : 0,
-  }));
+  const tooltip = useAnimatedStyle(
+    () => ({
+      backgroundColor: 'white',
+      position: 'absolute',
+      display: 'flex',
+      padding: 4,
+    }),
+    []
+  );
+  const leftTooltip = useAnimatedStyle(
+    () => ({
+      left: xGutter,
+      top: -(elementHeight.value / 2) - topOffset.value,
+      opacity: position.value === 'left' ? 1 : 0,
+    }),
+    [elementHeight, position, topOffset, xGutter]
+  );
+  const rightTooltip = useAnimatedStyle(
+    () => ({
+      left: width - elementWidth.value - xGutter,
+      top: -(elementHeight.value / 2) - topOffset.value,
+      opacity: position.value === 'right' ? 1 : 0,
+    }),
+    [elementHeight, elementWidth, position, topOffset, width, xGutter]
+  );
 
   return (
     <>

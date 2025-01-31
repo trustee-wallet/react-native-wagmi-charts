@@ -11,14 +11,18 @@ import type { TLineChartContext, YRangeProp } from './types';
 import { getDomain, lineChartDataPropToArray } from './utils';
 
 export const LineChartContext = React.createContext<TLineChartContext>({
+  // @ts-ignore
   currentX: { value: -1 },
+  // @ts-ignore
   currentIndex: { value: -1 },
   domain: [0, 0],
+  // @ts-ignore
   isActive: { value: false },
   yDomain: {
     min: 0,
     max: 0,
   },
+  xDomain: undefined,
   xLength: 0,
 });
 
@@ -30,6 +34,7 @@ type LineChartProviderProps = {
   yRange?: YRangeProp;
   onCurrentIndexChange?: (x: number) => void;
   xLength?: number;
+  xDomain?: [number, number];
 };
 
 LineChartProvider.displayName = 'LineChartProvider';
@@ -42,32 +47,40 @@ export function LineChartProvider({
   yRange,
   onCurrentIndexChange,
   xLength,
+  xDomain,
 }: LineChartProviderProps) {
   const currentX = useSharedValue(-1);
   const currentIndex = useSharedValue(-1);
   const isActive = useSharedValue(false);
 
   const trusteeData = React.useMemo(() => {
-    if (!high && !low) return data
+    if (!high && !low) return data;
+    // @ts-ignore
     return data?.map((item) => {
-      const _item = {...item}
-      if (_item?.value * 1 > high * 1) {
-        _item.value = high
+      const _item = { ...item };
+      if (Number(_item?.value) > Number(high)) {
+        _item.value = high;
       } else if (_item?.value * 1 < low * 1) {
-        _item.value = low
+        _item.value = low;
       }
-
-      return _item
-    })
+      return _item;
+    });
   }, [data]);
 
   const domain = React.useMemo(
-    () => getDomain(Array.isArray(trusteeData) ? trusteeData : Object.values(trusteeData)[0]),
+    () =>
+      getDomain(
+        // @ts-ignore
+        Array.isArray(trusteeData) ? trusteeData : Object.values(trusteeData)[0]
+      ),
     [trusteeData]
   );
 
   const contextValue = React.useMemo<TLineChartContext>(() => {
     const values = lineChartDataPropToArray(trusteeData).map(({ value }) => value);
+    const domainRows = Array.isArray(trusteeData)
+      ? trusteeData
+      : (Object.values(trusteeData)[0]);
 
     return {
       currentX,
@@ -78,8 +91,9 @@ export function LineChartProvider({
         min: yRange?.min ?? Math.min(...values),
         max: yRange?.max ?? Math.max(...values),
       },
-      xLength:
-        xLength ?? (Array.isArray(trusteeData) ? trusteeData : Object.values(trusteeData)[0]).length,
+      xDomain,
+      // @ts-ignore
+      xLength: xLength ?? domainRows?.length,
     };
   }, [
     currentIndex,
@@ -90,6 +104,7 @@ export function LineChartProvider({
     yRange?.max,
     yRange?.min,
     xLength,
+    xDomain,
   ]);
 
   useAnimatedReaction(
@@ -98,7 +113,8 @@ export function LineChartProvider({
       if (x !== -1 && x !== prevX && onCurrentIndexChange) {
         runOnJS(onCurrentIndexChange)(x);
       }
-    }
+    },
+    [currentIndex]
   );
 
   return (

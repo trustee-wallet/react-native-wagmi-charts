@@ -1,15 +1,19 @@
 import * as React from 'react';
 // @ts-ignore
 import * as d3Shape from 'd3-shape';
-import { Dimensions, StyleSheet, View, ViewProps } from 'react-native';
-import { LineChartContext } from './Context';
-import { LineChartIdProvider, useLineChartData } from './Data';
 
+import { Dimensions, StyleSheet, View, ViewProps } from 'react-native';
+import { LineChartIdProvider, useLineChartData } from './Data';
+import { Path, parse } from 'react-native-redash';
 import { getArea, getPath } from './utils';
+
+import { LineChartContext } from './Context';
 
 export const LineChartDimensionsContext = React.createContext({
   width: 0,
   height: 0,
+  pointWidth: 0,
+  parsedPath: {} as Path,
   path: '',
   area: '',
   shape: d3Shape.curveCatmullRom.alpha(0.5),
@@ -44,18 +48,18 @@ export function LineChart({
   absolute,
   ...props
 }: LineChartProps) {
-  const { yDomain, xLength } = React.useContext(LineChartContext);
+  const { yDomain, xLength, xDomain } = React.useContext(LineChartContext);
   const { data } = useLineChartData({
     id,
   });
 
   const pathWidth = React.useMemo(() => {
     let allowedWidth = width;
-    if (xLength > data.length) {
+    if (data && xLength > data.length) {
       allowedWidth = (width * data.length) / xLength;
     }
     return allowedWidth;
-  }, [data.length, width, xLength]);
+  }, [data, width, xLength]);
 
   const path = React.useMemo(() => {
     if (data && data.length > 0) {
@@ -66,10 +70,11 @@ export function LineChart({
         gutter: yGutter,
         shape,
         yDomain,
+        xDomain,
       });
     }
     return '';
-  }, [data, pathWidth, height, yGutter, shape, yDomain]);
+  }, [data, pathWidth, height, yGutter, shape, yDomain, xDomain]);
 
   const area = React.useMemo(() => {
     if (data && data.length > 0) {
@@ -80,14 +85,23 @@ export function LineChart({
         gutter: yGutter,
         shape,
         yDomain,
+        xDomain,
       });
     }
     return '';
-  }, [data, pathWidth, height, yGutter, shape, yDomain]);
+  }, [data, pathWidth, height, yGutter, shape, yDomain, xDomain]);
+
+  const parsedPath = React.useMemo(() => parse(path), [path]);
+  const pointWidth = React.useMemo(
+    () => width / (data ? data.length - 1 : 1),
+    [data, width]
+  );
 
   const contextValue = React.useMemo(
     () => ({
       gutter: yGutter,
+      parsedPath,
+      pointWidth,
       area,
       path,
       width,
@@ -95,7 +109,17 @@ export function LineChart({
       pathWidth,
       shape,
     }),
-    [yGutter, area, path, width, height, pathWidth, shape]
+    [
+      yGutter,
+      parsedPath,
+      pointWidth,
+      area,
+      path,
+      width,
+      height,
+      pathWidth,
+      shape,
+    ]
   );
 
   return (

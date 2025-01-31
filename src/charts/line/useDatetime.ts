@@ -18,15 +18,17 @@ export function useLineChartDatetime({
   const { currentIndex, data } = useLineChart();
 
   const timestamp = useDerivedValue(() => {
-    if (typeof currentIndex.value === 'undefined' || currentIndex.value === -1)
+    if (typeof currentIndex.value === 'undefined' || currentIndex.value === -1) {
       return '';
-    return data[currentIndex.value].timestamp;
-  });
+    }
+    // @ts-ignore
+    return data[currentIndex.value]?.timestamp ?? '';
+  }, [currentIndex, data]);
 
   const timestampString = useDerivedValue(() => {
     if (timestamp.value === '') return '';
     return timestamp.value.toString();
-  });
+  }, [timestamp]);
 
   const formatted = useDerivedValue(() => {
     const formattedDatetime = timestamp.value
@@ -40,7 +42,7 @@ export function useLineChartDatetime({
     return format
       ? format({ value: timestamp.value || -1, formatted: formattedDatetime })
       : formattedDatetime;
-  });
+  }, [format, locale, options, timestamp]);
 
   return { value: timestampString, formatted };
 }

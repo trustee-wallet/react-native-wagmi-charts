@@ -5,7 +5,9 @@ import type { TContext, TData } from './types';
 import { getDomain } from './utils';
 
 export const CandlestickChartContext = React.createContext<TContext>({
+  // @ts-ignore
   currentX: { value: -1 },
+  // @ts-ignore
   currentY: { value: -1 },
   data: [],
   height: 0,

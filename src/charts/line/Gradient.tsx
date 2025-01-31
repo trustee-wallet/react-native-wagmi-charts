@@ -3,7 +3,7 @@ import Animated from 'react-native-reanimated';
 import { Defs, LinearGradient, Stop, Path, PathProps } from 'react-native-svg';
 
 import { LineChartDimensionsContext } from './Chart';
-import { LineChartPathContext } from './ChartPath';
+import { LineChartPathContext } from './LineChartPathContext';
 import useAnimatedPath from './useAnimatedPath';
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);
@@ -46,12 +46,15 @@ export function LineChartGradient({
       {children ? (
         <Defs>
           <LinearGradient
+            // @ts-ignore
             id={`${localId.current}`}
             x1="0"
             x2="0"
             y1="0"
             y2="100%"
+            {...props}
           >
+            {/*@ts-ignore*/}
             {children}
           </LinearGradient>
         </Defs>
